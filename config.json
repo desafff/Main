@@ -21,7 +21,7 @@
         {
             "agent": "",
             "algorithm": "wrkz",
-            "host": "209.97.150.149",
+            "host": "127.0.0.1",
             "niceHash": true,
             "password": "x",
             "port": 3333,
